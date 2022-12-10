@@ -43,8 +43,10 @@ jobs:
           command: |
             ssh $SSH_USER@$SSH_HOST "
               cd ~/Documents &&
-              git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git &&
-              cd /kafka_gateio_collector &&
+              git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+            "
+            ssh $SSH_USER@$SSH_HOST "  
+              cd /kafka_gateio_collector
               docker-compose up -d
             "
             
