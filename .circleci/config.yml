@@ -25,8 +25,12 @@ jobs:
             TAG=1.0.$CIRCLE_BUILD_NUM
             docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
             docker push $DOCKERHUB_USER/kafka_gate_io_collector:$TAG
-      - add_ssh_keys
-      - deploy:
+
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
           name: Deploy Over SSH
           command: |
             ssh $SSH_USER@$SSH_HOST "
@@ -35,3 +39,14 @@ jobs:
               cd /kafka_gateio_collector
               docker-compose up -d
             "
+            
+    workflows:
+      build-and-deploy:
+      jobs:
+          - build
+          - deploy:
+              requires:
+              - build # only deploy once build job has completed
+              filters:
+              branches:
+                  only: master
