@@ -19,7 +19,5 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
-            if [ "$ {CIRCLE_BRANCH}" == "master" ]; then
-              TAG=1.0.$CIRCLE_BUILD_NUM
-              docker push $DOCKERHUB_USER/gate_io_collector:$TAG
-            fi
+            TAG=1.0.$CIRCLE_BUILD_NUM
+            docker push $DOCKERHUB_USER/gate_io_collector:$TAG
