@@ -14,15 +14,12 @@ jobs:
           version: 20.10.14
           docker_layer_caching: true
       - run:
-          # Builds a docker image to push to Docker Hub
-          # Tag (-t) pattern is below, where CircleCI
-          # to get the Dockerfile from the current directory.
-          # <docker_hub_username/docker-hub-password:version>.
           name: Build Docker image
           command: docker build -t $DOCKERHUB_USER/gate_io_collector:1.0 .
       - deploy:
           name: Push application Docker image
           command: |
             if [ "$ {CIRCLE_BRANCH}" == "master" ]; then
-              docker push "${DOCKERHUB_USER}/gate_io_collector:1.0"
+              TAG=1.0.$CIRCLE_BUILD_NUM
+              docker push $DOCKERHUB_USER/gate_io_collector:$TAG
             fi
