@@ -42,10 +42,10 @@ jobs:
           name: Deploy Over SSH
           command: |
             ssh $SSH_USER@$SSH_HOST "
-              cd ~/Documents
-              git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git
-              cd /kafka_gateio_collector
-              docker-compose up -d
+              cd ~/Documents;
+              git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git;
+              cd /kafka_gateio_collector;
+              docker-compose up -d;
             "
             
 workflows:
