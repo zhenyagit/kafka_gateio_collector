@@ -2,21 +2,27 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker:20.10.21-git
+      - image: cimg/go:1.17
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
     steps:
       - checkout
+      # ... steps for building/testing app ...
+
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
       - run:
           # Builds a docker image to push to Docker Hub
           # Tag (-t) pattern is below, where CircleCI
           # to get the Dockerfile from the current directory.
           # <docker_hub_username/docker-hub-password:version>.
           name: Build Docker image
-          command: docker build -t imjsman/gate_io_collector:1.0 .
+          command: docker build -t $DOCKERHUB_USER/gate_io_collector:1.0 .
       - deploy:
           name: Push application Docker image
           command: |
             if [ "$ {CIRCLE_BRANCH}" == "master" ]; then
-              login="$(aws ecr get-login)"
-              ${login}
-              docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+              docker push "${DOCKERHUB_USER}/gate_io_collector:1.0"
             fi
