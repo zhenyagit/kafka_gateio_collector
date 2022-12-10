@@ -43,7 +43,12 @@ jobs:
           command: |
             ssh $SSH_USER@$SSH_HOST "
               cd ~/Documents &&
-              git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+              if [ ! -d "kafka_gateio_collector" ] ; then
+                  git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+              else
+                  cd "kafka_gateio_collector"
+                  git pull https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+              fi
             "
             ssh $SSH_USER@$SSH_HOST "  
               cd ~/Documents/kafka_gateio_collector
