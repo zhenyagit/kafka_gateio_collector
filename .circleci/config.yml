@@ -1,16 +1,18 @@
 version: 2
 jobs:
   build:
-    machine:
-      image: ubuntu-2204:2022.04.2
+    docker:
+      - image: cimg/go:1.17
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
     steps:
       - checkout
-     # start proprietary DB using private Docker image
-     # with credentials stored in the UI
-      - run: |
-         echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+      # ... steps for building/testing app ...
 
-     # build the application image
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
       - run:
           # Builds a docker image to push to Docker Hub
           # Tag (-t) pattern is below, where CircleCI
