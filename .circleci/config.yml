@@ -40,13 +40,13 @@ jobs:
               docker-compose up -d
             "
             
-    workflows:
-      build-and-deploy:
-      jobs:
-          - build
-          - deploy:
-              requires:
-              - build # only deploy once build job has completed
-              filters:
-              branches:
-                  only: master
+workflows:
+  build-and-deploy:
+  jobs:
+      - build
+      - deploy:
+          requires:
+          - build # only deploy once build job has completed
+          filters:
+          branches:
+              only: master
