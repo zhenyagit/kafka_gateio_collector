@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          # Builds a docker image to push to Docker Hub
+          # Tag (-t) pattern is below, where CircleCI
+          # to get the Dockerfile from the current directory.
+          # <docker_hub_username/docker-hub-password:version>.
+          name: Build Docker image
+          command: docker build -t imjsman/gate_io_collector:1.0 .
+      - deploy:
+          name: Push application Docker image
+          command: |
+            if [ "$ {CIRCLE_BRANCH}" == "master" ]; then
+              login="$(aws ecr get-login)"
+              ${login}
+              docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+            fi

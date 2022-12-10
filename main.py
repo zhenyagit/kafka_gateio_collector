@@ -53,7 +53,7 @@ def main():
 	time.sleep(delay_until_broker_start)
 
 	candle_writer = KafkaWriter("candlesticks", [kafka_hostname])
-	moment_writer = KafkaWriter("momentum", [kafka_hostname])
+	moment_writer = KafkaWriter("trade_cup", [kafka_hostname])
 
 	def download_write_all_c(down):
 		candle_writer.write(Data(down[0].load_candlesticks(interval="10s"), down[0].pair))
