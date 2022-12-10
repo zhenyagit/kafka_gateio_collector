@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.8
+      - image: docker:20.10.21-git
     steps:
       - checkout
       - run:
