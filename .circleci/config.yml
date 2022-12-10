@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Setup SSH
           command: |
-            - ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+            ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
       - run:
           name: Deploy Over SSH
           command: |
