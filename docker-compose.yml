@@ -24,7 +24,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     volumes:
-      - ./broker/data:/var/lib/kafka/data
+      - broker_data:/var/lib/kafka/data
     networks:
       - kafka_net
 
@@ -41,6 +41,8 @@ services:
     networks:
       - kafka_net
 
+volumes:
+  broker_data:
 
 networks:
   kafka_net:
