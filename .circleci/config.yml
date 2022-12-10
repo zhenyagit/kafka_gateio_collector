@@ -19,10 +19,16 @@ jobs:
           command: |
             TAG=1.0.$CIRCLE_BUILD_NUM
             docker build -t $DOCKERHUB_USER/kafka_gate_io_collector:$TAG .
-      - deploy:
+      - run:
           name: Push application Docker image
           command: |
             TAG=1.0.$CIRCLE_BUILD_NUM
-            docker login -u "${DOCKERHUB_USER}" -p="${DOCKERHUB_PASSWORD}" 
-
+            docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
             docker push $DOCKERHUB_USER/kafka_gate_io_collector:$TAG
+      - deploy:
+          name: Deploy Over SSH
+          command: |
+            ssh $SSH_USER@$SSH_HOST "
+              cd ~/Documents/kafka_gate
+              docker-compose up -d
+            ""
