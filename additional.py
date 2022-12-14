@@ -9,6 +9,10 @@ class Data:
 		self.obj = obj
 		self.currency_pair = currency_pair
 		self.time = time.time()
+		self.add_time_to_data()
+
+	def add_time_to_data(self):
+		self.obj["time"] = self.time
 
 	def get_currency_pair(self):
 		return self.currency_pair
