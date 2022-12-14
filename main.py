@@ -31,6 +31,16 @@ def demo():
 	scheduler.add_and_start_loop_thread(func2, 1)
 
 
+def demo_print():
+	pair = "XCH_USDT"
+	downloader = GateIODownloader(pair)
+	temp_writer = Writer()
+	temp_writer.write(Data(downloader.load_candlesticks(interval="10s"), pair))
+	temp_writer.write(Data(downloader.load_momentum(), pair))
+
+	
+
+
 def main():
 	if "DELAY" in os.environ:
 		delay_until_broker_start = int(os.environ['DELAY'])
