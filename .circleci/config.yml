@@ -78,7 +78,9 @@ jobs:
             "
             ssh $SSH_USER@$SSH_HOST "  
               cd ~/Documents/$CIRCLE_PROJECT_REPONAME
-              docker-compose -f ./docker-compose-dev.yml -p dev up -d 
+              docker-compose -f ./docker-compose-dev.yml pull
+              docker-compose -f ./docker-compose-dev.yml -p dev up -d --remove-orphans
+              docker image prune
             "
               
 
@@ -108,7 +110,9 @@ jobs:
             "
             ssh $SSH_USER@$SSH_HOST "  
               cd ~/Documents/$CIRCLE_PROJECT_REPONAME
-              docker-compose up -d
+              docker-compose pull
+              docker-compose up -d --remove-orphans
+              docker image prune
             "
             
 workflows:
