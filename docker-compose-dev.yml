@@ -30,7 +30,7 @@ services:
 
 
   collector:
-    image: imjsman/kafka_gate_io_collector:dev_latest
+    image: imjsman/kafka_gateio_collector:dev_latest
 #    container_name: collector
     depends_on:
       - broker
