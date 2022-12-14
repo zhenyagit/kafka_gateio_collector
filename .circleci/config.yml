@@ -50,35 +50,35 @@ jobs:
   run_dev:
     machine:
       enabled: true
-      steps:
-        - add_ssh_keys:
-            fingerprints:
-              - "${SSH_FINGERPRINT}"
-        - checkout
-        - run:
-            name: Setup SSH
-            command: |
-              ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
-        - run:
-            name: Deploy Over SSH
-            command: |
-              ssh $SSH_USER@$SSH_HOST "
-                cd ~/Documents &&
-                if [ ! -d "$CIRCLE_PROJECT_REPONAME" ] ; then
-                    git clone https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
-                else
-                    cd "$CIRCLE_PROJECT_REPONAME"
-                    git pull https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
-                fi
-              "
-              ssh $SSH_USER@$SSH_HOST "  
-                cd ~/Documents/$CIRCLE_PROJECT_REPONAME
-                git checkout -b ${CIRCLE_BRANCH}
-              "
-              ssh $SSH_USER@$SSH_HOST "  
-                cd ~/Documents/$CIRCLE_PROJECT_REPONAME
-                docker-compose -f ./docker-compose-dev.yml -p dev up -d 
-              "
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_FINGERPRINT}"
+      - checkout
+      - run:
+          name: Setup SSH
+          command: |
+            ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+      - run:
+          name: Deploy Over SSH
+          command: |
+            ssh $SSH_USER@$SSH_HOST "
+              cd ~/Documents &&
+              if [ ! -d "$CIRCLE_PROJECT_REPONAME" ] ; then
+                  git clone https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
+              else
+                  cd "$CIRCLE_PROJECT_REPONAME"
+                  git pull https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
+              fi
+            "
+            ssh $SSH_USER@$SSH_HOST "  
+              cd ~/Documents/$CIRCLE_PROJECT_REPONAME
+              git checkout -b ${CIRCLE_BRANCH}
+            "
+            ssh $SSH_USER@$SSH_HOST "  
+              cd ~/Documents/$CIRCLE_PROJECT_REPONAME
+              docker-compose -f ./docker-compose-dev.yml -p dev up -d 
+            "
               
 
   deploy:
