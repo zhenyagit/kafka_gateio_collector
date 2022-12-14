@@ -47,6 +47,7 @@ jobs:
             docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
             docker push --all-tags $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME
 
+
   run_dev:
     machine:
       enabled: true
