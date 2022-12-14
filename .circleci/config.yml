@@ -1,16 +1,14 @@
 version: 2
 jobs:
-  build:
+  docker_build_and_push_dev:
     docker:
       - image: cimg/go:1.17
         auth:
           username: $DOCKERHUB_USER
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+          password: $DOCKERHUB_PASSWORD
     resource_class: small
     steps:
       - checkout
-      # ... steps for building/testing app ...
-
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
@@ -18,13 +16,70 @@ jobs:
           name: Build Docker image
           command: |
             TAG=1.0.$CIRCLE_BUILD_NUM
-            docker build -t $DOCKERHUB_USER/kafka_gate_io_collector:$TAG .
+            docker build -t $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME:$TAG -t $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME:dev_latest .
       - run:
           name: Push application Docker image
           command: |
-            TAG=1.0.$CIRCLE_BUILD_NUM
             docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
-            docker push $DOCKERHUB_USER/kafka_gate_io_collector:$TAG
+            docker push --all-tags $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME
+
+
+  docker_build_and_push_release:
+    docker:
+      - image: cimg/go:1.17
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD
+    resource_class: small
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+      - run:
+          name: Build Docker image
+          command: |
+            TAG=1.0.$CIRCLE_BUILD_NUM
+            docker build -t $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME:$TAG -t $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME:latest .
+      - run:
+          name: Push application Docker image
+          command: |
+            docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
+            docker push --all-tags $DOCKERHUB_USER/$CIRCLE_PROJECT_REPONAME
+
+  run_dev:
+    machine:
+      enabled: true
+      steps:
+        - add_ssh_keys:
+            fingerprints:
+              - "${SSH_FINGERPRINT}"
+        - checkout
+        - run:
+            name: Setup SSH
+            command: |
+              ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+        - run:
+            name: Deploy Over SSH
+            command: |
+              ssh $SSH_USER@$SSH_HOST "
+                cd ~/Documents &&
+                if [ ! -d "$CIRCLE_PROJECT_REPONAME" ] ; then
+                    git clone https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
+                else
+                    cd "$CIRCLE_PROJECT_REPONAME"
+                    git pull https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
+                fi
+              "
+              ssh $SSH_USER@$SSH_HOST "  
+                cd ~/Documents/$CIRCLE_PROJECT_REPONAME
+                git checkout -b ${CIRCLE_BRANCH}
+              "
+              ssh $SSH_USER@$SSH_HOST "  
+                cd ~/Documents/$CIRCLE_PROJECT_REPONAME
+                docker-compose -f ./docker-compose-dev.yml -p dev up -d 
+              "
+              
 
   deploy:
     machine:
@@ -43,15 +98,15 @@ jobs:
           command: |
             ssh $SSH_USER@$SSH_HOST "
               cd ~/Documents &&
-              if [ ! -d "kafka_gateio_collector" ] ; then
-                  git clone https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+              if [ ! -d "$CIRCLE_PROJECT_REPONAME" ] ; then
+                  git clone https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
               else
-                  cd "kafka_gateio_collector"
-                  git pull https://github.com/$GITHUB_USER/kafka_gateio_collector.git
+                  cd "$CIRCLE_PROJECT_REPONAME"
+                  git pull https://github.com/$GITHUB_USER/$CIRCLE_PROJECT_REPONAME.git
               fi
             "
             ssh $SSH_USER@$SSH_HOST "  
-              cd ~/Documents/kafka_gateio_collector
+              cd ~/Documents/$CIRCLE_PROJECT_REPONAME
               docker-compose up -d
             "
             
@@ -59,10 +114,23 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build # only deploy once build job has completed
+      - docker_build_and_push_dev:
           filters:
             branches:
-                only: master
+              only: /dev*/
+      - docker_build_and_push_release:
+          filters:
+            branches:
+              only: master
+      - run_dev:
+          requires:
+            - docker_build_and_push_dev
+          filters:
+            branches:
+              only: /dev*/
+      - deploy:
+          requires:
+            - docker_build_and_push_release
+          filters:
+            branches:
+              only: master
